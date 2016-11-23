@@ -390,6 +390,58 @@ protected void onDestroy()
 ```
 比如，当前Activity页面所有的请求以Activity对象作为tag，可以在onDestory里面统一取消。
 
+## 设置请求参数为utf-8格式
+
+```java
+String urls = imageRemoteAddr.substring(0, imageRemoteAddr.length() - 1);
+        Log.e(TAG, urls);
+        StringBuffer sb = new StringBuffer();
+        //设置表单参数
+        sb.append("tuneImages"+"="+songName+"&");
+        sb.append("singer"+"="+singer+"&");
+        sb.append("tuneImages"+"="+style+"&");
+        sb.append("tuneDesc"+"="+dscrt+"&");
+        sb.append("tuneImages"+"="+urls+"&");
+        sb.append("sessionId"+"="sessionId+"&");
+        sb.append("id"+"="+id+"&");
+
+        RequestBody body = RequestBody.create(FORM_CONTENT_TYPE, sb.toString());
+        //创建请求
+        final Request request = new Request.Builder()
+                .url(RequestMethod.PROTOCOL_CREATE_SCORE)
+                .post(body)
+                .tag(this)
+                .build();
+
+        RequestManager.requestWithBody(mContext, null, new StringCallback() {}, request);
+}
+
+/**
+     *
+     * @param context
+     * @param params
+     * @param callback
+     * @param request 自定义request，中文参数需要自定义该参数，进行uft-8转换
+     * @param remoteUrl
+     */
+    public static void requestWithBody(Context context, HashMap<String, Object> params, Callback callback,
+                                       Request request, String remoteUrl) {
+        GetBuilder getBuilder = OkHttpUtils.get();
+
+        getBuilder.url(remoteUrl)
+                .tag(context);
+        if (params != null && params.size() > 0) {
+            for (String key : params.keySet()) {
+                getBuilder.addParams(key, (String) params.get(key));
+            }
+        }
+        getBuilder.build()
+                .connTimeOut(20000)
+                .readTimeOut(20000)
+                .writeTimeOut(20000)
+                .execute(callback, request);
+    }
+```
 ## 混淆
 
 ```
