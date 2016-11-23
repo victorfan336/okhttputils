@@ -50,12 +50,29 @@ public class RequestCall
         return this;
     }
 
-    public Call buildCall(Callback callback)
-    {
+    public Call buildCall(Callback callback) {
         request = generateRequest(callback);
+        return getBuildCall();
+    }
 
-        if (readTimeOut > 0 || writeTimeOut > 0 || connTimeOut > 0)
-        {
+    /**
+     * 
+     * @param callback
+     * @param request 可自定义request
+     * @return
+     */
+    public Call buildCallWithRequest(Callback callback, Request request) {
+        if (request != null) {
+            this.request = request;
+        } else {
+            this.request = generateRequest(callback);
+        }
+
+        return getBuildCall();
+    }
+
+    private Call getBuildCall() {
+        if (readTimeOut > 0 || writeTimeOut > 0 || connTimeOut > 0) {
             readTimeOut = readTimeOut > 0 ? readTimeOut : OkHttpUtils.DEFAULT_MILLISECONDS;
             writeTimeOut = writeTimeOut > 0 ? writeTimeOut : OkHttpUtils.DEFAULT_MILLISECONDS;
             connTimeOut = connTimeOut > 0 ? connTimeOut : OkHttpUtils.DEFAULT_MILLISECONDS;
@@ -67,13 +84,27 @@ public class RequestCall
                     .build();
 
             call = clone.newCall(request);
-        } else
-        {
+        } else {
             call = OkHttpUtils.getInstance().getOkHttpClient().newCall(request);
         }
         return call;
     }
 
+    /**
+     *
+     * @param callback
+     * @param request 可自定request
+     */
+    public void execute(Callback callback, Request request) {
+        buildCallWithRequest(callback, request);
+
+        if (callback != null) {
+            callback.onBefore(this.request, getOkHttpRequest().getId());
+        }
+
+        OkHttpUtils.getInstance().execute(this, callback);
+    }
+    
     private Request generateRequest(Callback callback)
     {
         return okHttpRequest.generateRequest(callback);
